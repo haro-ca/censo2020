@@ -13,7 +13,7 @@ dict_censo <- readxl::read_excel("data/raw/Censo2020_CPV_CB_descriptor_bd_ejempl
     janitor::clean_names()
 
 # Limpieza ====
-dict_censo %>% 
+cat_variables <- dict_censo %>% 
     filter(!is.na(descripcion), !is.na(pregunta_y_categoria)) %>% 
     select(variable = mnemonico, descripcion) %>% 
     mutate(variable = str_to_lower(variable)) %>% 
@@ -29,6 +29,7 @@ censo_pob %>%
     mutate(descripcion = fct_reorder(descripcion, missing), 
            missing = missing / 1e6) %>% 
     fst::write_fst("data/interim/missing_values_frame.fst")
+
 
 
 
