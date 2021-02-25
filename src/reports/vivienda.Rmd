@@ -15,6 +15,7 @@ knitr::opts_chunk$set(echo = TRUE)
 # Lectura
 ```{r}
 library(tidyverse)
+library(extrafont)
 
 viviendas <- fst::read_fst(here::here("data/interim/viviendas_clean.fst")) %>% 
     tibble()
@@ -44,7 +45,7 @@ Tenemos un total de `r scales::comma(viv_tot_vec)` viviendas.
 ```{r}
 viv_gg <- viviendas %>% 
     count(clase_viv) %>% 
-    left_join(cat_clase_viv) %>% 
+    left_join(cat_clase_viv, by = "clase_viv") %>% 
     mutate(porc_viv = n / sum(n)) %>% 
     relocate(porc_viv) %>% 
     mutate(clase_de_vivienda = str_wrap(clase_de_vivienda, width = 20)) 
@@ -52,13 +53,16 @@ top_viv <- viv_gg %>%
     slice_max(porc_viv, n = 1)
 viv_gg %>% 
     ggplot(aes(y = fct_reorder(clase_de_vivienda, porc_viv), x = porc_viv)) +
-    geom_point(size = 5, shape = 21, fill = "red", alpha = 0.8) +
-    geom_col(width = 0.05, fill = "red", alpha = 0.8) +
+    geom_col(width = 0.07, fill = "red", alpha = 0.8) +
+    geom_point(size = 7, shape = 21, fill = "red", alpha = 0.9) +
     scale_x_continuous(labels = scales::percent_format(accuracy = 0.1)) +
     labs(y = NULL, x = "Porcentaje de viviendas", 
          title = glue::glue("La clase de vivienda predominante es {str_to_lower(pull(top_viv, clase_de_vivienda))}"), 
-         subtitle = glue::glue("Se percibe el {scales::percent(pull(top_viv, porc_viv))} del total de viviendas")) +
-    ggthemes::theme_clean()
+         subtitle = glue::glue("Acumula el {scales::percent(pull(top_viv, porc_viv))} del total de viviendas")) +
+    ggthemes::theme_clean() +
+    theme(text = element_text("Roboto Mono for Powerline")) +
+    ggsave(here::here("figs/viviendas_clase_viv.png"), height = 8, width = 8.5)
+    
 
 ```
 
