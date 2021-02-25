@@ -32,12 +32,14 @@ censo_est_clean  %>%
     # geom_text(aes(label = scales::percent(porc_pob)), 
     scale_fill_manual(values = c("#28AA9A", "#F59A28"), 
                       labels = c("F", "M")) +
+    facet_wrap(vars(nom_ent)) +
     labs(y = NULL, x = NULL, 
-         title = "Estructura de la población", 
+         title = "Estructura de la población por grupo de edades", 
          legend = "Sexo") +
     ggthemes::theme_clean() +
     theme(axis.line.y = element_blank(), 
-          text = element_text(family = "Roboto Mono for Powerline"))
+          text = element_text(family = "Roboto Mono for Powerline")) +
+    ggsave("figs/bono_pob.png", height = 8, width = 13)
 
 
 

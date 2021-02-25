@@ -1,0 +1,71 @@
+---
+title: "vivienda_reporte"
+output: 
+    rmdformats::readthedown: 
+        css: estilos.css
+        code_folding: hide
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Lectura
+```{r}
+library(tidyverse)
+
+viviendas <- fst::read_fst(here::here("data/interim/viviendas_clean.fst")) %>% 
+    tibble()
+cat_clase_viv <- readxl::read_excel(here::here("data/raw/Censo2020_CPV_CB_descriptor_bd_ejemplo.xlsx"),
+  sheet = "VIVIENDAS",
+  range = "E29:G41", 
+  na = "Nulo") %>% 
+    janitor::clean_names() %>% 
+    select(clase_de_vivienda,
+           clase_viv = starts_with("x"))
+
+viviendas %>% 
+    slice_head(n = 100) %>% 
+    DT::datatable()
+```
+
+# Info general
+```{r}
+viv_tot_vec <- viviendas %>% 
+    summarise(n = n_distinct(id_viv)) %>% 
+    pull()
+```
+
+Tenemos un total de `r scales::comma(viv_tot_vec)` viviendas.
+
+# Visualización
+```{r}
+viv_gg <- viviendas %>% 
+    count(clase_viv) %>% 
+    left_join(cat_clase_viv) %>% 
+    mutate(porc_viv = n / sum(n)) %>% 
+    relocate(porc_viv) %>% 
+    mutate(clase_de_vivienda = str_wrap(clase_de_vivienda, width = 20)) 
+top_viv <- viv_gg %>% 
+    slice_max(porc_viv, n = 1)
+viv_gg %>% 
+    ggplot(aes(y = fct_reorder(clase_de_vivienda, porc_viv), x = porc_viv)) +
+    geom_point(size = 5, shape = 21, fill = "red", alpha = 0.8) +
+    geom_col(width = 0.05, fill = "red", alpha = 0.8) +
+    scale_x_continuous(labels = scales::percent_format(accuracy = 0.1)) +
+    labs(y = NULL, x = "Porcentaje de viviendas", 
+         title = glue::glue("La clase de vivienda predominante es {str_to_lower(pull(top_viv, clase_de_vivienda))}"), 
+         subtitle = glue::glue("Se percibe el {scales::percent(pull(top_viv, porc_viv))} del total de viviendas")) +
+    ggthemes::theme_clean()
+
+```
+
+
+
+
+
+
+
+

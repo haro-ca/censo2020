@@ -1,6 +1,9 @@
 *.csv
 *.fst
 *.xlsx
+*.png
+.DS_Store
+*.html
 
 # History files
 .Rhistory
